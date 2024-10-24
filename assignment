@@ -1,0 +1,40 @@
+@Bean
+public CommandLineRunner initData(AuthorRepository authorRepository, BookRepository bookRepository) {
+    return args -> {
+        for (int i = 1; i <= 10; i++) {
+            Author author = new Author();
+            author.setName("Author " + i);
+            author.setEmail("author" + i + "@example.com");
+            author.setBiography("Biography of Author " + i);
+            authorRepository.save(author);
+            
+            Book book = new Book();
+            book.setTitle("Book Title " + i);
+            book.setIsbn("ISBN-" + i);
+            book.setPublishDate(LocalDate.now().minusYears(i));
+            book.setAuthor(author);
+            bookRepository.save(book);
+        }
+    };
+}
+
+@PostMapping("/author/save")
+public String saveAuthor(@ModelAttribute("author") Author author) {
+    authorService.saveAuthor(author);
+    return "redirect:/authors";
+}
+
+@GetMapping("/authors")
+public String listAuthors(Model model) {
+    model.addAttribute("authors", authorService.getAllAuthors());
+    return "authors";
+}
+
+@Query("SELECT b FROM Book b INNER JOIN b.author a WHERE a.name = :authorName")
+List<Book> findBooksByAuthorName(@Param("authorName") String authorName);
+
+@PostMapping("/author/update/{id}")
+public String updateAuthor(@PathVariable Long id, @ModelAttribute("author") Author author) {
+    authorService.saveAuthor(author);
+    return "redirect:/authors";
+}
